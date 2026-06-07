@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='student.css') }}">
+</head>
+<body>
+
+<!--NAVIGATION BAR-->
+<nav class="navbar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo-img">
+    </div>
+    <div class="nav-title">Student Dashboard</div>
+    <ul class="nav-links">
+        <li class="dropdown">
+            <a href="#" class="dropbtn">{{ user.name }}</a>
+            <div class="dropdown-content">
+                <a href="/logout" class="logout-btn">Log Out</a>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+<!--DASHBOARD-->
+<div class="container1">
+    <h1>Good day, {{user.name}}</h1>
+</div>
+
+<!-- (BAGO TO AH) BORROW REQUEST STATUS -->
+<div class="container">
+    <h1>Your Borrow Requests</h1>
+
+    {% if requests %}
+        <div class="requests-list">
+            {% for req in requests %}
+                <div class="request-card {{ req.status|lower }}">
+                    {{ req.quantity }}x {{ req.item_name }} —
+                    <strong>{{ req.status }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No borrow requests yet.</p>
+    {% endif %}
+</div>
+
+<!-- EXISTING EQUIPMENT TABLE -->
+<div class="container">
+    <h1>Available Equipment</h1>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Item</th>
+            <th>Available</th>
+            <th>Action</th>
+        </tr>
+        {% for item in inventory %}
+
+        <tr>
+            <td>{{ item.item_id }}</td>
+            <td class="item-name-cell">{{ item.item_name }}</td>
+            <td>{{ item.available_stock }}</td>
+            <td>
+                <form action="/borrow" method="POST" class="borrow-form" id="form-{{ item.item_id }}">
+                    <input type="hidden" name="item_id" value="{{ item.item_id }}">
+
+                    <div class="quantity-selector">
+                        <button type="button" class="qty-btn minus" onclick="decrementQty(this)">-</button>
+                        <input type="number" name="quantity" value="1" min="1" max="{{ item.available_stock }}" readonly>
+                        <button type="button" class="qty-btn plus" onclick="incrementQty(this, {{ item.available_stock }})">+</button>
+                    </div>
+
+                    <button type="button" class="submit-borrow-btn"
+                        {% if item.available_stock|int <= 0 %}disabled{% endif %}
+                        onclick="openConfirmation('{{ item.item_id }}', this)">
+                    {% if item.available_stock|int <= 0 %}Out of Stock{% else %}Borrow{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- (ETO RIN BAGO) PREVIOUSLY BORROWED ITEMS -->
+<div class="container">
+    <h1>Previously Borrowed Items</h1>
+
+    {% if returned_items %}
+        {% for item in returned_items %}
+            <div class="request-card returned">
+                {{ item.quantity }}x {{ item.item_name }} — RETURNED
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No returned items.</p>
+    {% endif %}
+</div>
+
+<!--CONFIRM MODAL-->
+<div id="confirmModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>Confirm Your Request</h3>
+        <p>Are you sure you want to borrow:</p>
+        <div class="confirm-details">
+            <span id="modalQuantity">1</span>x <strong id="modalItemName">Equipment</strong>
+        </div>
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
+            <button type="button" class="modal-btn accept-btn" id="modalConfirmBtn">Confirm & Submit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function incrementQty(button, maxStock) {
+    const input = button.parentElement.querySelector('input[type="number"]');
+    let val = parseInt(input.value);
+    if (val < maxStock) input.value = val + 1;
+}
+
+function decrementQty(button) {
+    const input = button.parentElement.querySelector('input[type="number"]');
+    let val = parseInt(input.value);
+    if (val > 1) input.value = val - 1;
+}
+
+let activeFormId = null;
+function openConfirmation(itemId, button) {
+    const row = button.closest('tr');
+    const name = row.querySelector('.item-name-cell').innerText;
+    const qty = row.querySelector('input[name="quantity"]').value;
+
+    activeFormId = "form-" + itemId;
+    document.getElementById('modalItemName').innerText = name;
+    document.getElementById('modalQuantity').innerText = qty;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+
+document.getElementById('modalConfirmBtn').onclick = function() {
+    if (activeFormId) {
+        document.getElementById(activeFormId).submit();
+    }
+};
+</script>
+
+</body>
+</html>

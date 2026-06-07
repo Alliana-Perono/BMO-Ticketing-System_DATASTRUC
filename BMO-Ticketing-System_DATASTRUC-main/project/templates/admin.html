@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo-img" onerror="this.style.display='none'">
+    </div>
+    <div class="nav-title">Admin Dashboard</div>
+    <ul class="nav-links">
+        <li class="dropdown">
+            <a href="#" class="dropbtn">{{ user.name }}</a>
+            <div class="dropdown-content">
+                <a href="/logout" class="logout-btn">Log Out</a>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+<div class="container1">
+    <h1>Welcome back, {{user.name}}</h1>
+</div>
+
+<div class="container">
+    <div class="inventory-header">
+        <h1>Admin Inventory Overview</h1>
+        <div class="inventory-actions">
+            <button class="btn btn-add" onclick="openModal('addModal')">➕ Add Item</button>
+            <button class="btn btn-update" onclick="openModal('updateModal')">⚙️ Update Stock</button>
+            <button class="btn btn-decline" onclick="openModal('deleteModal')">🗑️ Delete Item</button>
+        </div>
+    </div>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Item</th>
+            <th>Total Stock</th>
+            <th>Available</th>
+        </tr>
+        {% for item in inventory %}
+        <tr>
+            <td>{{ item.item_id }}</td>
+            <td class="item-name-cell">{{ item.item_name }}</td>
+            <td>{{ item.total_stock }}</td>
+            <td>{{ item.available_stock }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="container">
+    <h1>Pending Borrow Requests</h1>
+    {% if not pending %}
+        <p style="padding: 20px; text-align: center; font-size: 18px;">No pending requests at the moment.</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>ID Number</th>
+                <th>Equipment</th>
+                <th>Qty</th>
+                <th>Actions</th>
+            </tr>
+            {% for req in pending %}
+            <tr>
+                <td>{{ req.student_name }}</td>
+                <td>{{ req.student_id }}</td>
+                <td class="item-name-cell">{{ req.item_name }}</td>
+                <td>{{ req.quantity }}</td>
+                <td>
+                    <div class="action-btn-group">
+                        <a href="/admin/action/{{ req.index }}/approve" class="btn-table btn-table-approve">✔ Approve</a>
+                        <a href="/admin/action/{{ req.index }}/decline" class="btn-table btn-table-decline">✖ Decline</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</div>
+
+<div class="container">
+    <h1>Knowledge Base & Equipment Tracker</h1>
+    {% if not kb_logs %}
+        <p style="padding: 20px; text-align: center; font-size: 18px;">No historical data logs tracked yet.</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>Student Name & ID</th>
+                <th>Equipment</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Return Control</th>
+            </tr>
+            {% for log in kb_logs %}
+            <tr>
+                <td>{{ log.student_name }} ({{ log.student_id }})</td>
+                <td>{{ log.item_name }}</td>
+                <td>{{ log.quantity }}</td>
+                <td>
+                    <span class="badge badge-{{ log.status | lower }}">{{ log.status }}</span>
+                </td>
+                <td>
+                    {% if log.status == 'BORROWED' %}
+                        <a href="/admin/action/{{ log.index }}/return" class="btn-table btn-table-return">↩ Mark Returned</a>
+                    {% elif log.status == 'RETURNED' %}
+                        <span style="color: #28a745; font-weight: bold;">✅ Restocked</span>
+                    {% else %}
+                        <span style="color: #777;">Declined</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <h3>Add New Equipment</h3>
+        <form action="/admin/inventory/add" method="POST">
+            <div class="modal-form-group">
+                <input type="text" name="item_id" placeholder="Enter Item ID" required>
+                <input type="text" name="item_name" placeholder="Enter Item Name" required>
+                <input type="number" name="total_stock" placeholder="Enter Total Stock Amount" min="1" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn" onclick="closeModal('addModal')">Cancel</button>
+                <button type="submit" class="modal-btn accept-btn">Add Item</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <h3>Update Stock Numbers</h3>
+        <form action="/admin/inventory/update" method="POST">
+            <div class="modal-form-group">
+                <input type="text" name="item_id" placeholder="Target Item ID" required>
+                <input type="number" name="total_stock" placeholder="New Total Stock" min="0" required>
+                <input type="number" name="available_stock" placeholder="New Available Stock" min="0" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn" onclick="closeModal('updateModal')">Cancel</button>
+                <button type="submit" class="modal-btn accept-btn">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color: #dc3545;">Delete Equipment Item</h3>
+        <form action="/admin/inventory/delete" method="POST">
+            <div class="modal-form-group">
+                <p style="margin-bottom: 15px; font-size: 16px;">Provide target ID to purge from records permanently:</p>
+                <input type="text" name="item_id" placeholder="Enter Item ID to delete" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn cancel-btn" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="submit" class="modal-btn" style="background-color: #dc3545; color: white;">Confirm Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+}
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
+</body>
+</html>
