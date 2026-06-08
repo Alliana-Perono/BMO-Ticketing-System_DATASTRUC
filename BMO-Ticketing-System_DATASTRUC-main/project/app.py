@@ -1,3 +1,15 @@
+'''
+Program Name: app.py
+Program Description: This program connects the bmo_main and bmo_auth modules to create a web application for the BMO Sports Complex ticketing system. 
+Programmer Name: Ello, Iligan, Ocier, Perono
+Date: May 20, 2026
+=====================================================================================================================================
+                                                   History
+=====================================================================================================================================
+Date                                             Description                                        Programmer
+------------------------------------------------------------------------------------------------------------------------------------
+05/20/2026                               Initial implementation of ticketing system           Ello, Iligan, Ocier, Perono
+'''
 from flask import Flask, render_template, request, redirect, url_for, session
 from bmo_auth import AuthSystem, setup_users
 import csv
