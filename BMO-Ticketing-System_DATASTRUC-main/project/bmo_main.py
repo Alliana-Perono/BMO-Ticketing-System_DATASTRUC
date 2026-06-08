@@ -1,3 +1,15 @@
+'''
+Program Name: bmo_main.py
+Program Description: This program is a ticketing system for the BMO Sports Complex. It allows students to view available sports equipment, reserve items, and logs all transactions. Admins can manage inventory and process reservation requests using a queue data structure (FIFO). The system uses CSV files for data storage and includes user authentication.
+Programmer Name: Ello, Iligan, Ocier, Perono
+Date: May 18, 2026
+=====================================================================================================================================
+                                                   History
+=====================================================================================================================================
+Date                                             Description                                        Programmer
+------------------------------------------------------------------------------------------------------------------------------------
+05/18/2026                               Initial implementation of ticketing system           Ello, Iligan, Ocier, Perono
+'''
 import csv
 import os
 
