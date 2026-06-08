@@ -1,3 +1,15 @@
+'''
+Program Name: bmo_auth.py
+Program Description: This program handles user authentication for the BMO Sports Complex ticketing system. It allows users to register, login, and logout.
+Programmer Name: Ello, Iligan, Ocier, Perono
+Date: May 19, 2026
+=====================================================================================================================================
+                                                   History
+=====================================================================================================================================
+Date                                             Description                                        Programmer
+------------------------------------------------------------------------------------------------------------------------------------
+05/19/2026                               Initial implementation of ticketing system           Ello, Iligan, Ocier, Perono
+'''
 import csv
 import os
 
